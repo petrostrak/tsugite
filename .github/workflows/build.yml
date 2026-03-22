@@ -20,17 +20,24 @@ jobs:
     - name: Install system dependencies
       run: |
         brew update
-        brew install qt5
+        brew install gcc  # For numpy compilation
     
     - name: Install Python dependencies
       run: |
         pip install --upgrade pip wheel setuptools
         
-        # Install PyQt5 from pre-built wheel first
-        pip install --only-binary :all: PyQt5 PyQt5-sip PyQt5-Qt5
+        # Install PyQt5 first (has pre-built wheels)
+        pip install PyQt5==5.15.4
         
-        # Install remaining requirements, excluding PyQt5
-        grep -v "PyQt5" requirements.txt | xargs pip install
+        # Install numpy with specific configuration for ARM64
+        pip install numpy==1.20.3 --no-binary=numpy
+        
+        # Install the rest
+        pip install multipledispatch==0.6.0
+        pip install Pillow==8.3.2
+        pip install PyOpenGL==3.1.5
+        pip install pyrr==0.10.3
+        pip install six==1.15.0
         
         pip install pyinstaller
     
