@@ -7,7 +7,15 @@ import math
 import os
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
+from PyQt5.QtWidgets import QOpenGLWidget
+from PyQt5.QtGui import QSurfaceFormat, QIcon, QPainter, QPixmap, QMovie
+
+fmt = QSurfaceFormat()
+fmt.setVersion(3, 2)
+fmt.setProfile(QSurfaceFormat.CoreProfile)
+fmt.setDepthBufferSize(24)
+QSurfaceFormat.setDefaultFormat(fmt)
+
 from PyQt5.QtCore import *
 from PyQt5.uic import *
 from PyQt5.QtOpenGL import *
@@ -22,10 +30,10 @@ from ViewSettings import ViewSettings
 from Show import Show
 from _mainWindow import get_untitled_filename
 
-class GLWidget(QGLWidget):
+class GLWidget(QOpenGLWidget):
     def __init__(self, parent=None):
         self.parent = parent
-        QGLWidget.__init__(self, parent)
+        QOpenGLWidget.__init__(self, parent)
         # self.setMinimumSize(800, 800)
         self.setMouseTracking(True)
         self.click_time = time.time()
@@ -39,10 +47,10 @@ class GLWidget(QGLWidget):
     #     fmt.setSampleBuffers(True)
 
     #     self.parent = parent
-    #     QGLWidget.__init__(self, fmt, parent)
+    #     QOpenGLWidget.__init__(self, fmt, parent)
 
     #     # self.parent = parent
-    #     # QGLWidget.__init__(self, parent)
+    #     # QOpenGLWidget.__init__(self, parent)
     #     # self.setMinimumSize(10, 10)
     #     # self.setMaximumSize(10000, 10000)
     #     #self.setMinimumSize(800, 800)
@@ -56,51 +64,27 @@ class GLWidget(QGLWidget):
     from _GLWidget import initializeGL
     # from _GLWidget import resizeGL
     def resizeGL(self, w, h):
-        def perspective(fovY, aspect, zNear, zFar):
-            fH =tan(fovY / 360. * pi) * zNear
-            fW = fH * aspect
-            glFrustum(-fW, fW, -fH, fH, zNear, zFar)
-
-        # oratio = self.width() /self.height()
         ratio = 1.267
-        
- 
-
         if h * ratio > w:
             h = round(w / ratio)
-
         else:
             w = round(h * ratio)
 
-
-        # print(" widget resizeGL")        
-        # print(w)
-        # print(h)
-        
         glViewport(0, 0, w, h)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        perspective(45.0, ratio, 1, 1000)
-        glMatrixMode(GL_MODELVIEW)
         self.width = w
         self.height = h
-        self.wstep = int(0.5+w/5)
-        self.hstep = int(0.5+h/4)
-
-
-
+        self.wstep = int(0.5 + w / 5)
+        self.hstep = int(0.5 + h / 4)
         
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)
         # glViewport(0,0,self.width-self.wstep,self.height)
-        glLoadIdentity()
 
         self.show.update()
         # ortho = np.multiply(np.array((-2, +2, -2, +2), dtype=float), self.zoomFactor)
 	    # glOrtho(ortho[0], ortho[1], ortho[2], ortho[3], 4.0, 15.0)
 
         glViewport(0,0,self.width-self.wstep,self.height)
-        # glLoadIdentity()
         # Color picking / editing
         # Pick faces -1: nothing, 0: hovered, 1: adding, 2: pulling
         if not self.type.mesh.select.state==2 and not self.type.mesh.select.state==12: # Draw back buffer colors
@@ -144,7 +128,6 @@ class GLWidget(QGLWidget):
                 hquater = self.height/4
                 wquater = self.width/5
                 glViewport(self.width-self.wstep,self.height-self.hstep*(i+1),self.wstep,self.hstep)
-                glLoadIdentity()
                 if i==self.type.mesh.select.suggstate:
                     glEnable(GL_SCISSOR_TEST)
                     glScissor(self.width-self.wstep,self.height-self.hstep*(i+1),self.wstep,self.hstep)
@@ -281,7 +264,7 @@ class mainWindow(QMainWindow):
 
         timer = QTimer(self)
         timer.setInterval(20)   # period, in milliseconds
-        timer.timeout.connect(self.glWidget.updateGL)
+        timer.timeout.connect(self.glWidget.update)
         timer.start()
 
 

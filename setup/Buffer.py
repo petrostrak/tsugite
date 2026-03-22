@@ -10,8 +10,10 @@ class ElementProperties:
         self.n = n
 
 class Buffer:
-    def __init__(self,parent):
+    def __init__(self, parent):
         self.parent = parent
+        self.VAO = glGenVertexArrays(1)
+        glBindVertexArray(self.VAO)
         self.VBO = glGenBuffers(1)
         glBindBuffer(GL_ARRAY_BUFFER, self.VBO)
         self.EBO = glGenBuffers(1)
@@ -25,18 +27,18 @@ class Buffer:
         self.img_data_cont = np.array(list(image.getdata()), np.uint8)
 
     def buffer_vertices(self):
+        glBindVertexArray(self.VAO)              # <-- bind before attrib setup
         try:
             cnt = 6*len(self.parent.vertices)
             glBufferData(GL_ARRAY_BUFFER, cnt, self.parent.vertices, GL_DYNAMIC_DRAW)
         except:
             print("--------------------------ERROR IN ARRAY BUFFER WRAPPER -------------------------------------")
 
-        # vertex attribute pointers
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(0)) #position
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(0))
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(12)) #color
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(12))
         glEnableVertexAttribArray(1)
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(24)) #texture
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(24))
         glEnableVertexAttribArray(2)
         glGenTextures(3)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
@@ -53,5 +55,6 @@ class Buffer:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 400, 400, 0, GL_RGB, GL_UNSIGNED_BYTE, self.img_data_cont)
 
     def buffer_indices(self):
+        glBindVertexArray(self.VAO)
         cnt = 4*len(self.parent.indices)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, cnt, self.parent.indices, GL_DYNAMIC_DRAW)

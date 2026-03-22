@@ -14,8 +14,9 @@ from Types import Types
 from Show import Show
 
 def initializeGL(self):
-    self.qglClearColor(QColor(255, 255, 255))
-    glEnable(GL_DEPTH_TEST)                  # enable depth testing
+    self.makeCurrent()
+    glClearColor(1.0, 1.0, 1.0, 1.0)
+    glEnable(GL_DEPTH_TEST)
     sax = self.parent.findChild(QComboBox, "comboSLIDE").currentIndex()
     dim = self.parent.findChild(QSpinBox, "spinBoxRES").value()
     ang = self.parent.findChild(QDoubleSpinBox, "spinANG").value()
@@ -39,9 +40,6 @@ def resizeGL(self, w, h):
         def perspective(fovY, aspect, zNear, zFar):
             fH =tan(fovY / 360. * pi) * zNear
             fW = fH * aspect
-            glFrustum(-fW, fW, -fH, fH, zNear, zFar)
-
-      
         
         # print(oratio)
         # if h * oratio > w:
@@ -61,51 +59,8 @@ def resizeGL(self, w, h):
             h = h
 
         glViewport(0, 0, w, h)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
         perspective(45.0, w / h, 1, 1000)
-        glMatrixMode(GL_MODELVIEW)
         self.width = w
         self.height = h
         self.wstep = int(0.5+w/5)
         self.hstep = int(0.5+h/4)
-
-
-# def resizeGL(self, width, height):
-#         side = min(width, height)
-#         glViewport((width - side) // 2, (height - side) // 2, side, side)
-#         #GL.glViewport(50,50,500,500)
-#         glMatrixMode(GL_PROJECTION)
-#         glLoadIdentity()# Reset The Projection Matrix
-#         glOrtho(-2 * (width / height), +2 * (width / height), -2, +2, 4.0, 15.0)
-		
-#         #GL.glOrtho(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0)
-#         glMatrixMode(GL_MODELVIEW)
-# #     # QGLWidget.resize(self, width, height)
-#         self.width = width
-#         self.height = height
-#         self.wstep = int(0.5+width/5)
-#         self.hstep = int(0.5+height/4)
-#         # resize_cb        = pyqtSignal(int,int)
-#         # self.resize_cb.emit(width,height)
-# #     # glViewport(0, 0, self.width(), self.height())
-# #     glViewport(0, 0, width, height)
-# #     glMatrixMode(GL_PROJECTION)
-# #     glLoadIdentity()
-# #     # gluPerspective(70, 1.0 * width / height, 0.1, 1000.0)    
-# #     glOrtho(-1.0,1.0,-1.0,1.0,-1.0,1.0)
-# #     # gluLookAt(100, 100, 100,
-# #     #               0, 0, 0,
-# #     #               0, 1, 0)
-# #     glMatrixMode(GL_MODELVIEW)
-# #     # glLoadIdentity()
-# # # def resizeGL(self, width, height):
-# # #     self.width = width
-# # #     self.height = height
-# # #     self.wstep = int(0.5+width/5)
-# # #     self.hstep = int(0.5+height/4)
-# # #     glViewport(0, 0, width, height)
-# # #     glMatrixMode(GL_PROJECTION)
-# # #     glLoadIdentity()
-# # #     glOrtho(-1.0,1.0,-1.0,1.0,-1.0,1.0)
-# # #     glMatrixMode(GL_MODELVIEW)

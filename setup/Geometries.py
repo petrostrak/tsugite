@@ -8,6 +8,15 @@ import copy
 import os
 from Misc import FixedSide
 
+def quads_to_tris(indices):
+    """Convert flat quad indices (groups of 4) to triangle indices (groups of 6)."""
+    indices = list(indices)
+    tris = []
+    for i in range(0, len(indices), 4):
+        a, b, c, d = indices[i], indices[i+1], indices[i+2], indices[i+3]
+        tris.extend([a, b, c, a, c, d])
+    return tris
+
 # Supporting functions
 def get_random_height_fields(dim,noc):
     hfs = []
@@ -40,7 +49,6 @@ def mat_from_fields(hfs,ax):
     return mat
 
 def joint_face_indices(self,all_indices,mat,fixed_sides,n,offset,global_offset=0):
-    # Make indices of faces for drawing method GL_QUADS
     # 1. Faces of joint
     indices = []
     indices_ends = []
@@ -85,22 +93,21 @@ def joint_face_indices(self,all_indices,mat,fixed_sides,n,offset,global_offset=0
                 indices.extend([d0,c0,c1,d1]) #side face 3
                 indices.extend([c0,a0,a1,c1]) ##side face 4
     # Format
-    indices = np.array(indices, dtype=np.uint32)
+    indices = np.array(quads_to_tris(indices), dtype=np.uint32)
     indices = indices + offset
-    indices_ends = np.array(indices_ends, dtype=np.uint32)
+    indices_ends = np.array(quads_to_tris(indices_ends), dtype=np.uint32)
     indices_ends = indices_ends + offset
     # Store
-    indices_prop = ElementProperties(GL_QUADS, len(indices), len(all_indices)+global_offset, n)
+    indices_prop = ElementProperties(GL_TRIANGLES, len(indices), len(all_indices)+global_offset, n)
     if len(all_indices)>0: all_indices = np.concatenate([all_indices, indices])
     else: all_indices = indices
-    indices_ends_prop = ElementProperties(GL_QUADS, len(indices_ends), len(all_indices)+global_offset, n)
+    indices_ends_prop = ElementProperties(GL_TRIANGLES, len(indices_ends), len(all_indices)+global_offset, n)
     all_indices = np.concatenate([all_indices, indices_ends])
-    indices_all_prop = ElementProperties(GL_QUADS, len(indices)+len(indices_ends), indices_prop.start_index, n)
+    indices_all_prop = ElementProperties(GL_TRIANGLES, len(indices)+len(indices_ends), indices_prop.start_index, n)
     # Return
     return indices_prop, indices_ends_prop, indices_all_prop, all_indices
 
 def joint_area_face_indices(self,all_indices,mat,area_faces,n):
-    # Make indices of faces for drawing method GL_QUADS
     # 1. Faces of joint
     indices = []
     indices_ends = []
@@ -142,15 +149,14 @@ def joint_area_face_indices(self,all_indices,mat,area_faces,n):
             indices_ends.extend([d0+offset,c0+offset,c1+offset,d1+offset]) #side face 3
             indices_ends.extend([c0+offset,a0+offset,a1+offset,c1+offset]) ##side face 4
     # Format
-    indices = np.array(indices, dtype=np.uint32)
+    indices = np.array(quads_to_tris(indices), dtype=np.uint32)
     #indices = indices + offset
-    indices_ends = np.array(indices_ends, dtype=np.uint32)
+    indices_ends = np.array(quads_to_tris(indices_ends), dtype=np.uint32)
     #indices_ends = indices_ends + offset
-    # Store
-    indices_prop = ElementProperties(GL_QUADS, len(indices), len(all_indices), n)
-    if len(all_indices)>0: all_indices = np.concatenate([all_indices, indices])
-    else: all_indices = indices
-    indices_ends_prop = ElementProperties(GL_QUADS, len(indices_ends), len(all_indices), n)
+# Store
+    indices_prop = ElementProperties(GL_TRIANGLES, len(indices), len(all_indices), n)
+    all_indices = np.concatenate([all_indices, indices])
+    indices_ends_prop = ElementProperties(GL_TRIANGLES, len(indices_ends), len(all_indices), n)
     all_indices = np.concatenate([all_indices, indices_ends])
     # Return
     return indices_prop, indices_ends_prop, all_indices
@@ -356,7 +362,6 @@ def get_top_corner_heights(mat,n,ax,dir):
     return heights
 
 def joint_top_face_indices(self,all_indices,n,noc,offset):
-    # Make indices of faces for drawing method GL_QUADS
     # Set face direction
     if n==0: sdirs = [0]
     elif n==noc-1: sdirs = [1]
@@ -411,15 +416,15 @@ def joint_top_face_indices(self,all_indices,n,noc,offset):
         indices.extend([b0,d0,d1,b1]) #side face 2
         indices.extend([d0,c0,c1,d1]) #side face 3
         indices.extend([c0,a0,a1,c1]) ##side face 4
-    # Format
-    indices = np.array(indices, dtype=np.int32)
+# Format
+    indices = np.array(quads_to_tris(indices), dtype=np.int32)
     indices = indices + offset
-    indices_tops = np.array(indices_tops, dtype=np.int32)
+    indices_tops = np.array(quads_to_tris(indices_tops), dtype=np.int32)
     indices_tops = indices_tops + offset
     # Store
-    indices_prop = ElementProperties(GL_QUADS, len(indices), len(all_indices), n)
+    indices_prop = ElementProperties(GL_TRIANGLES, len(indices), len(all_indices), n)
     all_indices = np.concatenate([all_indices, indices])
-    indices_tops_prop = ElementProperties(GL_QUADS, len(indices_tops), len(all_indices), n)
+    indices_tops_prop = ElementProperties(GL_TRIANGLES, len(indices_tops), len(all_indices), n)
     all_indices = np.concatenate([all_indices, indices_tops])
     # Return
     return indices_prop, indices_tops_prop, all_indices
@@ -641,7 +646,7 @@ class Geometries:
                 if not self.eval.connected[n]:
                     fne,fe,uncon,all_inds = joint_face_indices(self,all_inds,self.eval.voxel_matrix_unconnected,[],n,ax*self.parent.vn)
                     self.indices_not_fcon.append(uncon)
-                    all = ElementProperties(GL_QUADS, con.count+uncon.count, con.start_index, n)
+                    all = ElementProperties(GL_TRIANGLES, con.count+uncon.count, con.start_index, n)
                 else:
                     self.indices_not_fcon.append(None)
                     all = con
