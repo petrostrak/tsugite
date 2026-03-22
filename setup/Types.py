@@ -1097,6 +1097,9 @@ class Types:
     def update_angle(self,ang):
         self.ang = ang
         self.create_and_buffer_vertices(milling_path=False)
+        self.mesh.voxel_matrix_from_height_fields()
+        for mesh in self.sugs: mesh.voxel_matrix_from_height_fields()
+        self.combine_and_buffer_indices()
 
     def update_timber_width_and_height(self,inds,val,milling_path=False):
         for i in inds: self.real_tim_dims[i]=val
