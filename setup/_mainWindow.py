@@ -100,29 +100,34 @@ def set_feedback_view(self):
 @pyqtSlot()
 def change_sliding_axis(self):
     ax = self.findChild(QComboBox, "comboSLIDE").currentIndex()
+    self.glWidget.makeCurrent()
     bool, msg = self.glWidget.type.update_sliding_direction(ax)
-    print("msg")
+    print(msg)
     #QMessageBox = ...
 
 @pyqtSlot()
 def change_number_of_timbers(self):
     val = self.findChild(QSpinBox, "spinBoxNUM").value()
+    self.glWidget.makeCurrent()
     self.glWidget.type.update_number_of_components(val)
 
 @pyqtSlot()
 def change_resolution(self):
     val = self.findChild(QSpinBox, "spinBoxRES").value()
+    self.glWidget.makeCurrent()
     add = val-self.glWidget.type.dim
     self.glWidget.type.update_dimension(add)
 
 @pyqtSlot()
 def set_angle_of_intersection(self):
     val = self.findChild(QDoubleSpinBox, "spinANG").value()
+    self.glWidget.makeCurrent()
     self.glWidget.type.update_angle(val)
 
 @pyqtSlot()
 def set_timber_X(self):
     val = self.findChild(QDoubleSpinBox, "spinDX").value()
+    self.glWidget.makeCurrent()
     mp = self.glWidget.show.view.show_milling_path
     if mp: self.glWidget.type.create_and_buffer_vertices(milling_path=True)
     if self.findChild(QCheckBox, "checkCUBE").isChecked():
@@ -135,6 +140,7 @@ def set_timber_X(self):
 @pyqtSlot()
 def set_timber_Y(self):
     val = self.findChild(QDoubleSpinBox, "spinDY").value()
+    self.glWidget.makeCurrent()
     mp = self.glWidget.show.view.show_milling_path
     if self.findChild(QCheckBox, "checkCUBE").isChecked():
         self.glWidget.type.update_timber_width_and_height([0,1,2],val,milling_path=mp)
@@ -146,6 +152,7 @@ def set_timber_Y(self):
 @pyqtSlot()
 def set_timber_Z(self):
     val = self.findChild(QDoubleSpinBox, "spinDZ").value()
+    self.glWidget.makeCurrent()
     mp = self.glWidget.show.view.show_milling_path
     if self.findChild(QCheckBox, "checkCUBE").isChecked():
         self.glWidget.type.update_timber_width_and_height([0,1,2],val,milling_path=mp)
@@ -156,6 +163,7 @@ def set_timber_Z(self):
 
 @pyqtSlot()
 def set_all_timber_same(self):
+    self.glWidget.makeCurrent()
     mp = self.glWidget.show.view.show_milling_path
     if self.findChild(QCheckBox, "checkCUBE").isChecked():
         val = self.glWidget.type.real_tim_dims[0]
@@ -163,17 +171,23 @@ def set_all_timber_same(self):
         self.findChild(QDoubleSpinBox, "spinDY").setValue(val)
         self.findChild(QDoubleSpinBox, "spinDZ").setValue(val)
 
+
 @pyqtSlot()
 def randomize_geometry(self):
+    self.glWidget.makeCurrent()
     self.glWidget.type.mesh.randomize_height_fields()
+
 
 @pyqtSlot()
 def clear_geometry(self):
+    self.glWidget.makeCurrent()
     self.glWidget.type.mesh.clear_height_fields()
+
 
 @pyqtSlot()
 def set_milling_bit_diameter(self):
     val = self.findChild(QDoubleSpinBox, "spinDIA").value()
+    self.glWidget.makeCurrent()
     self.glWidget.type.fab.real_dia = val
     self.glWidget.type.fab.rad = 0.5*self.glWidget.type.fab.real_dia-self.glWidget.type.fab.tol
     self.glWidget.type.fab.dia = 2*self.glWidget.type.fab.rad
@@ -183,9 +197,11 @@ def set_milling_bit_diameter(self):
         self.glWidget.type.create_and_buffer_vertices(milling_path=True)
         self.glWidget.type.combine_and_buffer_indices(milling_path=True)
 
+
 @pyqtSlot()
 def set_fab_tolerance(self):
     val = self.findChild(QDoubleSpinBox, "spinTOL").value()
+    self.glWidget.makeCurrent()
     self.glWidget.type.fab.tol = val
     self.glWidget.type.fab.rad = 0.5*self.glWidget.type.fab.real_dia-self.glWidget.type.fab.tol
     self.glWidget.type.fab.dia = 2*self.glWidget.type.fab.rad
@@ -224,13 +240,16 @@ def set_interpolation(self):
 
 @pyqtSlot()
 def set_millingpath_view(self):
+    self.glWidget.makeCurrent()
     self.glWidget.show.view.show_milling_path = not self.glWidget.show.view.show_milling_path
     bool = self.glWidget.show.view.show_milling_path
     self.glWidget.type.create_and_buffer_vertices(milling_path=bool)
     self.glWidget.type.combine_and_buffer_indices(milling_path=bool)
 
+
 @pyqtSlot()
 def export_gcode(self):
+    self.glWidget.makeCurrent()
     if not self.glWidget.show.view.show_milling_path:
         self.glWidget.show.view.show_milling_path = True
         self.glWidget.type.create_and_buffer_vertices(milling_path=True)
@@ -255,6 +274,7 @@ def set_sbp_as_standard(self):
 
 @pyqtSlot()
 def new_file(self):
+    self.glWidget.makeCurrent()
     self.filename = get_untitled_filename("Untitled","tsu","_")
     self.setWindowTitle(self.filename.split("/")[-1]+" - "+self.title)
     self.glWidget.show.view.show_milling_path=False
@@ -262,15 +282,18 @@ def new_file(self):
     self.set_ui_values()
     self.show_all_timbers()
 
+
 @pyqtSlot()
 def open_file(self):
     filename, _ = QFileDialog.getOpenFileName(filter="Tsugite files (*.tsu)")
     if filename!='':
+        self.glWidget.makeCurrent()
         self.filename = filename
         self.setWindowTitle(self.filename.split("/")[-1]+" - "+self.title)
         self.findChild(QCheckBox, "checkCUBE").setChecked(False)
         self.glWidget.type.open(self.filename)
         self.set_ui_values()
+
 
 @pyqtSlot()
 def save_file(self):

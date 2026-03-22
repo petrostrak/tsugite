@@ -79,7 +79,7 @@ class GLWidget(QOpenGLWidget):
     def paintGL(self):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)
         # glViewport(0,0,self.width-self.wstep,self.height)
-
+        self.show.init_shader(self.show.shader_col)
         self.show.update()
         # ortho = np.multiply(np.array((-2, +2, -2, +2), dtype=float), self.zoomFactor)
 	    # glOrtho(ortho[0], ortho[1], ortho[2], ortho[3], 4.0, 15.0)
