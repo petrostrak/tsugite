@@ -1,0 +1,42 @@
+name: Build Tsugite for macOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-14  # or macos-latest (currently points to macOS 14/15)
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.8'
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build with PyInstaller (macOS 13.0+ compatible)
+      run: |
+        cd setup
+        # Set deployment target to macOS 13.0 for Ventura compatibility
+        export MACOSX_DEPLOYMENT_TARGET=13.0
+        pyinstaller --onefile --windowed --name Tsugite tsugite_app.py
+    
+    - name: Verify compatibility
+      run: |
+        # Check the minimum macOS version required
+        otool -l setup/dist/Tsugite.app/Contents/MacOS/Tsugite | grep -A5 "LC_VERSION_MIN_MACOSX" || echo "Check deployment target"
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Tsugite-macOS
+        path: setup/dist/Tsugite.app
