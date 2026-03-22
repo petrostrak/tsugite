@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-14  # or macos-latest (currently points to macOS 14/15)
+    runs-on: macos-14
     
     steps:
     - uses: actions/checkout@v4
@@ -17,23 +17,28 @@ jobs:
       with:
         python-version: '3.8'
     
-    - name: Install dependencies
+    - name: Install system dependencies
       run: |
-        pip install --upgrade pip
-        pip install -r requirements.txt
+        brew update
+        brew install qt5
+    
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip wheel setuptools
+        
+        # Install PyQt5 from pre-built wheel first
+        pip install --only-binary :all: PyQt5 PyQt5-sip PyQt5-Qt5
+        
+        # Install remaining requirements, excluding PyQt5
+        grep -v "PyQt5" requirements.txt | xargs pip install
+        
         pip install pyinstaller
     
-    - name: Build with PyInstaller (macOS 13.0+ compatible)
+    - name: Build with PyInstaller
       run: |
         cd setup
-        # Set deployment target to macOS 13.0 for Ventura compatibility
         export MACOSX_DEPLOYMENT_TARGET=13.0
         pyinstaller --onefile --windowed --name Tsugite tsugite_app.py
-    
-    - name: Verify compatibility
-      run: |
-        # Check the minimum macOS version required
-        otool -l setup/dist/Tsugite.app/Contents/MacOS/Tsugite | grep -A5 "LC_VERSION_MIN_MACOSX" || echo "Check deployment target"
     
     - name: Upload artifact
       uses: actions/upload-artifact@v4
