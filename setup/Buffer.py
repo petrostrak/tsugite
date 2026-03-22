@@ -27,7 +27,9 @@ class Buffer:
         self.img_data_cont = np.array(list(image.getdata()), np.uint8)
 
     def buffer_vertices(self):
-        glBindVertexArray(self.VAO)              # <-- bind before attrib setup
+        glBindVertexArray(self.VAO)
+        glBindBuffer(GL_ARRAY_BUFFER, self.VBO)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.EBO)
         try:
             cnt = 6*len(self.parent.vertices)
             glBufferData(GL_ARRAY_BUFFER, cnt, self.parent.vertices, GL_DYNAMIC_DRAW)
@@ -56,5 +58,6 @@ class Buffer:
 
     def buffer_indices(self):
         glBindVertexArray(self.VAO)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.EBO)
         cnt = 4*len(self.parent.indices)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, cnt, self.parent.indices, GL_DYNAMIC_DRAW)
